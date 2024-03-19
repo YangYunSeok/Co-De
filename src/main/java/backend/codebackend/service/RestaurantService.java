@@ -2,14 +2,9 @@ package backend.codebackend.service;
 
 import backend.codebackend.domain.Menu;
 import backend.codebackend.domain.Restuarant;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.Angle;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Async;
@@ -18,15 +13,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 @Service
 public class RestaurantService {
     // TODO 수정사항 : By.xpath("//span[contains.. 처럼 크롤링하는 코드는 셀레니움 백그라운드로 변경 시 안될 가능성 있음.
+    // TODO 수정사항(24.03.17) : 왠지 모르곘는데 백그라운드로 이제 잘 실행 됨. (주소를 잘 치자)
     private static RestaurantService restaurantService;
     private WebDriver driver;
     private WebDriverWait wait;
@@ -39,10 +33,11 @@ public class RestaurantService {
     }
 
     public void driver() {
-//        ChromeOptions options = new ChromeOptions();
-//        options.addArguments("--headless");
-        System.setProperty("webdriver.chrome.driver", "C:\\chromedriver\\chromedriver.exe");
-        this.driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("window-size=1400,1500");
+//        System.setProperty("webdriver.chrome.driver", "C:\\chromedriver\\chromedriver.exe"); //크롬 드라이버.exe 위치 지정
+        this.driver = new ChromeDriver(options);
         this.wait = new WebDriverWait(this.driver, Duration.ofSeconds(40));
     }
 
@@ -71,11 +66,8 @@ public class RestaurantService {
         WebElement clickSearch = wait.until(ExpectedConditions.elementToBeClickable(By.className("ico-pick")));
         clickSearch.click();
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(currentUrl)));
+
         //다음 창 주소 입력받음
         String expectedUrl = driver.getCurrentUrl();
 
@@ -91,13 +83,13 @@ public class RestaurantService {
     }
 
     public void selectCategory(String category) {
-        WebElement clickCategory = driver.findElement(By.xpath("//span[contains(@class, 'category-name') and text()='" + category + "']"));
+        WebElement clickCategory = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(@class, 'category-name') and text()='" + category + "']")));
         clickCategory.click();
     }
 
 
-    public List<Restuarant> RsData() {
 
+    public List<Restuarant> RsData() {
         // 가게 이름과 최소주문금액을 저장할 리스트 생성
         Restuarant rs;
         List<Restuarant> rsList = new ArrayList<Restuarant>();
@@ -123,6 +115,7 @@ public class RestaurantService {
 
             rsList.add(rs);
         }
+        driver.quit();
         return rsList;
     }
 
@@ -130,31 +123,13 @@ public class RestaurantService {
         driver.quit();
     }
 
-
-    public Menu deliveryInfo() {
-        Menu menu;
-
-        menu = Menu.builder()
-                .minPrice(driver.findElement(By.xpath("//li[contains(text(), '최소주문금액')]/span[@class='ng-binding']")).getText())
-                .delivery_fee(driver.findElement(By.xpath("//span[contains(text(), '배달요금')]")).getText())
-                .build();
-
-        if(menu.getMinPrice() == null) {
-            System.out.println("가게의 배달 정보가 조회되지 않습니다.");
-            return null;
-        }
-
-        return menu;
-    }
-
-
-
     @Async
     public Future<Menu> menuList(String restaurantTitle, String address) throws InterruptedException {
-//        ChromeOptions options = new ChromeOptions();
-//        options.addArguments("--headless");
-        System.setProperty("webdriver.chrome.driver", "C:\\chromedriver\\chromedriver.exe");
-        WebDriver driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("window-size=1400,1500");
+//        System.setProperty("webdriver.chrome.driver", "C:\\chromedriver\\chromedriver.exe"); //크롬 드라이버.exe 위치 지정
+        WebDriver driver = new ChromeDriver(options);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         // Google 웹 페이지를 엽니다.
@@ -174,11 +149,8 @@ public class RestaurantService {
         WebElement clickSearch = wait.until(ExpectedConditions.elementToBeClickable(By.className("ico-pick")));
         clickSearch.click();
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(currentUrl)));
+
         //다음 창 주소 입력받음
         String expectedUrl = driver.getCurrentUrl();
 

@@ -13,16 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-//import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
@@ -116,15 +112,7 @@ class CodeBackendApplicationTests {
 		RestaurantService restaurantService = new RestaurantService();
 		restaurantService.driver();
 		restaurantService.loadPage();
-		restaurantService.searchAddress("경기 성남시 분당구 대왕판교로385번길 2");
-
-//		if(category != "")
-//			restaurantService.selectCategory(category);
-//		try {
-//			Thread.sleep(1000);
-//		} catch (InterruptedException e) {
-//			throw new RuntimeException(e);
-//		}
+		restaurantService.searchAddress("경기도 고양시 일산동구 장항동 578-2 장항1동주민센터");
 
 		List<Restuarant> rs =restaurantService.RsData();
 
